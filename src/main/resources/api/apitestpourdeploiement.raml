@@ -1,0 +1,42 @@
+#%RAML 1.0
+title: apiTestPourDeploiement
+
+types:
+  user_test_datatype: !include /DataType/userDataType.raml
+
+
+/user:
+  get:
+    responses:
+      200:
+        body:
+          application/json:
+            type: user_test_datatype[]
+            examples:
+              output: !include /Examples/allUsersExample.raml
+  
+  post:
+    body:
+      application/json:
+        type: user_test_datatype
+        examples:
+          input: !include /Examples/createUserExample.raml
+    responses:
+      201:
+        body:
+          application/json:
+            example:
+              message: user created (but not really)
+  
+  /{userId}:
+      get:
+        responses:
+          200:
+            body:
+              application/json:
+                type: user_test_datatype
+                examples:
+                   output: !include /Examples/getUserByIdExample.raml
+
+    
+        

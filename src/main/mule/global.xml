@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="d6dcc493-db44-408d-a88f-59897d77682c" >
+		<http:listener-connection host="${http.host}" port="${http.port}" />
+	</http:listener-config>
+	
+	<configuration-properties doc:name="Configuration properties" doc:id="637496c7-0c39-4377-b8e2-6fba57a2cd35" file="${env}.yaml" />
+	<global-property doc:name="Global Property" doc:id="1dea3315-37d5-4af5-919f-a2480eefd016" name="env" value="Dev" />
+		<sftp:config name="SFTP_Config" doc:name="SFTP Config" doc:id="66767608-94bd-4192-a72c-01137fd8fcd3" >
+		<sftp:connection host="192.168.1.148 " username="Thai" password="Cooley"/>
+	</sftp:config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="5e2a117b-addf-43fb-b39b-3a30a1da0b6e" >
+		<db:my-sql-connection host="${db.host}" port="${db.port}" user="${db.user}" database="${db.database}"/>
+	</db:config>
+</mule>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+
+	<flow name="projetpourtestFlow" doc:id="b0b88f02-c797-4ff7-9f0a-45121fe2a1ba" >
+		<http:listener doc:name="Listener" doc:id="8a92f20f-8d75-4e13-8267-e41cdeabfc6e" config-ref="HTTP_Listener_config" path="/try" allowedMethods="POST"/>
+		<ee:transform doc:name="Transform Message" doc:id="aaaf5911-03a8-4e57-a371-1ba57dd270da" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="name" ><![CDATA[%dw 2.0
+output application/json
+---
+payload ]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<foreach doc:name="For Each" doc:id="cebeef2e-6267-447b-abcd-23310f4ef713" >
+			<set-variable doc:name="file name" doc:id="1a21a35b-483a-402c-80ed-ac65384b26c8" variableName="fileName" value='#["fichier_" ++ payload.Prenom]' />
+			<set-variable value="#[payload.groupe as String]" doc:name="base path" doc:id="84ddd688-da0c-452b-a215-2b09d2f9944b" variableName="basepath" />
+			<sftp:write doc:name="Write" doc:id="33bb31fc-d3a8-49cf-86aa-891b709fe217" config-ref="SFTP_Config" path="#['fichierTest/' ++ vars.basepath ++ '/' ++ vars.fileName ++ '.json']" mode="APPEND"/>
+
+			<logger level="INFO" doc:name="Logger" doc:id="987fe3e5-a60c-4ce3-a92b-78a8418e0a90" message="le fichier à bien été enregistré dans le dossier " />
+		</foreach>
+		<ee:transform doc:name="Transform Message" doc:id="9f8443e5-f091-4736-96c7-7f40e8ea45b6">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"status": 200,
+	"description": "le fichier a bien été enregistré"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="projetpourtestFlow1" doc:id="e60f8ed7-1680-4ea4-95e1-c8facbe91fc6" >
+		<http:listener doc:name="Listener" doc:id="9e8cbda1-d410-4f99-92d1-b65c391851fa" config-ref="HTTP_Listener_config" path="/transferFile"/>
+		<ee:transform doc:name="Transform Message" doc:id="9429f4b1-d846-496d-80ef-4599aa82e86a" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="nameFile" ><![CDATA[%dw 2.0
+output application/json
+---
+attributes.queryParams.nameFile]]></ee:set-variable>
+				<ee:set-variable variableName="numberDossier" ><![CDATA[%dw 2.0
+output application/json
+---
+attributes.queryParams.numberDossier]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<sftp:read doc:name="Read" doc:id="5cbbf88c-1361-4fb1-96d7-c89aa4ecc679" config-ref="SFTP_Config" path="#['fichierTest/' ++ vars.numberDossier ++ &quot;/fichier_&quot; ++ vars.nameFile ++ &quot;.json&quot; as String]" outputMimeType="application/json" />
+		<ee:transform doc:name="Transform Message" doc:id="9f88f2f8-65ab-40a7-a2ce-d24fe588040c">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+
+payload
+	
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-variable value='#["fichier_" ++ payload.Prenom]' doc:name="file name" doc:id="089c5543-ad4c-4da0-8c1c-566f36f196a1" variableName="fileName" />
+		<set-variable value="#[payload.groupe as String]" doc:name="base path" doc:id="45273b35-0c6e-4020-ad00-3c81507503a0" variableName="basepath" />
+		<sftp:write doc:name="Write" doc:id="bf30bd28-d3ba-4f71-8cc5-9d56752f8987" config-ref="SFTP_Config" path="#['folderTarget/' ++ vars.basepath ++ '/' ++ vars.fileName ++ '.json']" mode="APPEND" />
+		<logger level="INFO" doc:name="Logger" doc:id="fe293a90-d71c-4a6f-bab2-24910bc26b7b" message="le fichier à bien été enregistré dans le dossier " />
+	</flow>
+	<sub-flow name="getAllUsers" doc:id="d427beba-327e-438c-a637-463fc851d8ee">
+		<flow-ref doc:name="Flow Reference" doc:id="3d6714cb-00c0-401b-a90f-46006e88d0fb" name="dtabaseSubFlow"/>
+		<ee:transform doc:name="Transform Message" doc:id="c4c46c1f-6679-4b9d-b4b9-fecd2d5dfe8b">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<sub-flow name="dtabaseSubFlow" doc:id="085bdfdf-d709-4e28-b6ba-60b6d1c1976b" >
+		<db:select doc:name="Select" doc:id="043d735d-388b-4926-9703-41c15259e7e9" config-ref="Database_Config">
+			<db:sql><![CDATA[select * from users]]></db:sql>
+		</db:select>
+	</sub-flow>
+</mule>
